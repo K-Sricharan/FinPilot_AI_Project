@@ -51,13 +51,6 @@ The Tax Planning AI Agent can:
 
 ---
 
-### One suggestion
-
-Since you're building this as a **learning journey**, I recommend adding a progress tracker. It makes the repository more engaging and shows continuous development.
-
-For example:
-
-```markdown
 ## 📅 Project Progress
 
 - [x] Phase 0 – Environment Setup
