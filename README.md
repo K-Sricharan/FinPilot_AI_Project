@@ -47,3 +47,24 @@ The Tax Planning AI Agent can:
                       │
                       ▼
           Easy-to-Understand Answer
+
+
+---
+
+### One suggestion
+
+Since you're building this as a **learning journey**, I recommend adding a progress tracker. It makes the repository more engaging and shows continuous development.
+
+For example:
+
+```markdown
+## 📅 Project Progress
+
+- [x] Phase 0 – Environment Setup
+- [ ] Phase 1 – NVIDIA LLM Integration
+- [ ] Phase 2 – AI Agent Fundamentals
+- [ ] Phase 3 – Tax Calculator
+- [ ] Phase 4 – RAG Implementation
+- [ ] Phase 5 – LangGraph Workflow
+- [ ] Phase 6 – Streamlit UI
+- [ ] Phase 7 – Production Enhancements
