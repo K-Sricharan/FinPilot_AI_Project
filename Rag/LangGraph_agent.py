@@ -3,13 +3,6 @@ langgraph_agent.py
 
 LangGraph Agent for the Tax Planning AI Agent.
 
-This file creates the ReAct Agent using:
-
-1. NVIDIA LLM
-2. Tax Calculator Tool
-3. RAG Search Tool
-4. System Prompt
-
 The agent automatically:
 - Decides whether to call a tool
 - Executes the tool

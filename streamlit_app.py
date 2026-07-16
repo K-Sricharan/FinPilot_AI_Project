@@ -4,10 +4,6 @@ streamlit_app.py
 FinPilot AI
 Tax Planning Assistant
 
-Frontend:
-- Streamlit
-- LangGraph
-- NVIDIA LLM
 """
 
 import streamlit as st
