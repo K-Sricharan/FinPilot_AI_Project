@@ -201,27 +201,6 @@ RAG Tool      Tax Calculator Tool
 | Phase 5 – Tool Calling | ✅ Completed |
 | Phase 6 – Streamlit Chat Interface | ✅ Completed |
 | Phase 7 – End-to-End Testing | ✅ Completed |
-| Phase 8 – Docker Deployment | ⏳ Planned |
-| Phase 9 – Cloud Deployment | ⏳ Planned |
-| Phase 10 – Production Enhancements | ⏳ Planned |
-
----
-
-# 🎯 Future Improvements
-
-- Authentication
-- User Profiles
-- Tax Report Generation (PDF)
-- Chat History
-- Voice Support
-- Multi-Agent Architecture
-- MCP Integration
-- Cloud Deployment
-- Docker Support
-- API Version
-- Latest Budget Knowledge Base
-- Database Integration
-- Observability & Logging
 
 ---
 
