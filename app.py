@@ -1,26 +1,16 @@
-import os
-from dotenv import load_dotenv
-from models.nvidia_llm import llm
-from Prompts.system_prompt import SYSTEM_PROMPT
-from langchain_core.messages import (
-    SystemMessage,
-    HumanMessage,
-    ToolMessage,
-)
-from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage
 
-import Rag.LangGraph_agent
+from Rag.LangGraph_agent import get_agent
 
 
-agent = Rag.LangGraph_agent.get_agent()
+agent = get_agent()
 
 messages = []
 
-print("=" * 50)
+print("=" * 60)
 print("🤖 Tax Planning AI Assistant")
 print("Type 'exit' to quit.")
-print("=" * 50)
+print("=" * 60)
 
 while True:
 
@@ -34,12 +24,29 @@ while True:
         HumanMessage(content=question)
     )
 
-    response = agent.invoke(
-        {
-            "messages": messages
-        }
-    )
+    result = agent.invoke(
+    {
+        "messages": messages
+    }
+)
 
-    messages = response["messages"]
+print("\n" + "=" * 80)
+print("Returned Messages")
+print("=" * 80)
 
-    print("\nAI :", messages[-1].content)
+for message in result["messages"]:
+
+    print(f"\nType : {type(message).__name__}")
+
+    if hasattr(message, "tool_calls") and message.tool_calls:
+        print("Tool Calls:")
+        print(message.tool_calls)
+
+    print("Content:")
+    print(message.content)
+
+    print("-" * 80)
+
+messages = result["messages"]
+
+print("\nAI :", messages[-1].content)

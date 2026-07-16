@@ -1,12 +1,10 @@
 """
 tax_tools.py
-
-Production-ready tax calculation tools for the Tax Planning AI Agent.
+Tax calculation tools for the Tax Planning AI Agent.
 FY 2024-25 implementation.
 """
 
 from dataclasses import dataclass, asdict
-from typing import Optional
 from langchain_core.tools import tool
 
 CESS_RATE = 0.04
@@ -33,20 +31,6 @@ def _apply_slabs(taxable_income: float, slabs):
         top = taxable_income if upper is None else min(taxable_income, upper)
         tax += max(0, top - lower) * rate
     return tax
-
-def calculate_80c_deduction(investments: dict) -> float:
-    return min(sum(investments.values()) if investments else 0, 150000)
-
-
-def calculate_80d_deduction(
-    self_and_family: float = 0,
-    parents: float = 0,
-    self_senior: bool = False,
-    parents_senior: bool = False,
-):
-    self_cap = 50000 if self_senior else 25000
-    parent_cap = 50000 if parents_senior else 25000
-    return min(self_and_family, self_cap) + min(parents, parent_cap)
 
 
 def calculate_hra(
@@ -152,56 +136,99 @@ def calculate_tax_new_regime(
 
 
 @tool
-def compare_tax_regimes(profile: dict) -> dict:
+def compare_tax_regimes(
+    gross_income: float,
+    basic_salary: float = 0,
+    hra_received: float = 0,
+    rent_paid: float = 0,
+    deduction_80c: float = 0,
+    deduction_80d: float = 0,
+    home_loan_interest: float = 0,
+    other_deductions: float = 0,
+    nps_80ccd2: float = 0,
+    is_metro: bool = True,
+):
     """
-    Compare Old vs New tax regime.
+    What this function does?
 
-    profile example:
-    {
-        "gross_income":1800000,
-        "basic_salary":900000,
-        "hra_received":300000,
-        "rent_paid":240000,
-        "is_metro":True,
-        "investments":{"PPF":50000,"ELSS":100000},
-        "medical_self":25000,
-        "medical_parents":0,
-        "home_loan_interest":200000,
-        "other_deductions":0,
-        "nps_80ccd2":0
-    }
+    It compares the Old vs. New Tax Regime (FY 2024-25)
+    to find which one saves you more money.
+    
+    What it needs (Inputs)
+    gross_income: Your total yearly salary.
+    HRA details (Optional): Basic salary, rent paid, and whether you live in a metro city.
+    Old Regime Deductions (Optional): Investments like 80C (up to ₹1.5L), 80D (health insurance), home loan interest (up to ₹2L), and other tax-saving proofs.
+    New Regime Benefit (Optional): Corporate NPS contributions.
+
+    Compare the Old Tax Regime and New Tax Regime for an individual
+    taxpayer (FY 2024-25).
+
+    Parameters
+    ----------
+    gross_income : float
+        Total annual gross income.
+
+    basic_salary : float, optional
+        Annual basic salary used for HRA exemption calculation.
+
+    hra_received : float, optional
+        Total HRA received from the employer.
+
+    rent_paid : float, optional
+        Total annual rent paid.
+
+    deduction_80c : float, optional
+        Total eligible deduction under Section 80C
+        (Maximum ₹1,50,000).
+
+    deduction_80d : float, optional
+        Total eligible deduction under Section 80D.
+
+    home_loan_interest : float, optional
+        Interest paid on a self-occupied home loan
+        (Maximum ₹2,00,000).
+
+    other_deductions : float, optional
+        Any additional deductions under the Old Regime.
+
+    nps_80ccd2 : float, optional
+        Employer NPS contribution deductible under
+        Section 80CCD(2) (New Regime).
+
+    is_metro : bool, optional
+        True if the taxpayer resides in a metro city
+        (Delhi, Mumbai, Kolkata, Chennai).
+
+    Returns
+    -------
+    dict
+        {
+            "old_regime": {...},
+            "new_regime": {...},
+            "difference": ...,
+            "better_regime": ...
+        }
     """
-
-    deduction_80c = calculate_80c_deduction(
-        profile.get("investments", {})
-    )
-
-    deduction_80d = calculate_80d_deduction(
-        self_and_family=profile.get("medical_self", 0),
-        parents=profile.get("medical_parents", 0),
-        self_senior=profile.get("self_senior", False),
-        parents_senior=profile.get("parents_senior", False),
-    )
-
-    hra = calculate_hra(
-        basic_salary=profile.get("basic_salary", 0),
-        hra_received=profile.get("hra_received", 0),
-        rent_paid=profile.get("rent_paid", 0),
-        is_metro=profile.get("is_metro", True),
+    
+    hra_exemption = calculate_hra(
+        basic_salary=basic_salary,
+        hra_received=hra_received,
+        rent_paid=rent_paid,
+        is_metro=is_metro,
     )
 
     old = calculate_tax_old_regime(
-        gross_income=profile["gross_income"],
+        gross_income=gross_income,
         deduction_80c=deduction_80c,
         deduction_80d=deduction_80d,
-        hra_exemption=hra,
-        home_loan_interest=profile.get("home_loan_interest", 0),
-        other_deductions=profile.get("other_deductions", 0),
+        hra_exemption=hra_exemption,
+        home_loan_interest=home_loan_interest,
+        other_deductions=other_deductions,
     )
 
     new = calculate_tax_new_regime(
-        gross_income=profile["gross_income"],
-        nps_80ccd2=profile.get("nps_80ccd2", 0),
+        gross_income=gross_income,
+        nps_80ccd2=nps_80ccd2,
     )
 
     difference = abs(old.final_tax - new.final_tax)
@@ -213,30 +240,32 @@ def compare_tax_regimes(profile: dict) -> dict:
     else:
         better = "Either"
 
-    return {
+    result = {
         "old_regime": asdict(old),
         "new_regime": asdict(new),
         "difference": difference,
         "better_regime": better,
     }
 
+    return result
 
 if __name__ == "__main__":
-    sample = {
-        "gross_income": 1800000,
-        "basic_salary": 900000,
-        "hra_received": 300000,
-        "rent_paid": 240000,
-        "is_metro": True,
-        "investments": {
-            "PPF": 50000,
-            "ELSS": 100000,
-        },
-        "medical_self": 25000,
-        "medical_parents": 0,
-        "home_loan_interest": 200000,
-    }
 
     from pprint import pprint
 
-    pprint(compare_tax_regimes.invoke({"profile": sample}))
+    result = compare_tax_regimes.invoke(
+        {
+            "gross_income": 1800000,
+            "basic_salary": 900000,
+            "hra_received": 300000,
+            "rent_paid": 240000,
+            "deduction_80c": 150000,
+            "deduction_80d": 25000,
+            "home_loan_interest": 200000,
+            "other_deductions": 0,
+            "nps_80ccd2": 0,
+            "is_metro": True,
+        }
+    )
+
+    pprint(result)

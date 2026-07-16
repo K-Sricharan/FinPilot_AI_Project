@@ -25,7 +25,7 @@ import os
 
 load_dotenv()
 
-DATA_PATH = "data"
+DATA_PATH = "Data"
 
 VECTOR_DB_PATH = "vectorstore/faiss_index"
 
